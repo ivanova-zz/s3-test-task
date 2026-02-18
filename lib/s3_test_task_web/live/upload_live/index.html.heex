@@ -127,9 +127,6 @@
                 <td class="p-3 border">
                   <%= if etl_transformable?(file.name) do %>
                     <% etl = Map.get(@etl_status, file.name)
-                    IO.inspect(etl, label: "etl!!")
-                    IO.inspect(@etl_status, label: "@etl_status!!")
-                    IO.inspect(file.name, label: "@file.name!!")
                     %>
 
                     <% has_staging = has_staging_table?(@staging_tables, file.name) %>

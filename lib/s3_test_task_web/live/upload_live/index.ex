@@ -70,13 +70,10 @@ defmodule S3TestTaskWeb.UploadLive.Index do
 
   @impl true
   def handle_event("load_to_redshift", %{"key" => key, "name" => name}, socket) do
-    # Показываем индикатор
     socket = assign(socket, :loading_file, key)
     parent = self()
-    # Запускаем в Task чтобы не блокировать UI
     Task.start(fn ->
       result = RedshiftLoader.load_file(key)
-      IO.inspect(result, label: "task result!!!!!!!!!!!!!!")
       send(parent, {:redshift_result, key, name, result})
     end)
 
@@ -150,22 +147,17 @@ defmodule S3TestTaskWeb.UploadLive.Index do
   end
 
   def has_staging_table?(staging_tables, name) do
-    IO.inspect(staging_tables, label: "staging_tables!!!")
     Map.has_key?(staging_tables, name)
   end
 
   defp load_etl_statuses do
-    answer1 = EtlLog.get_status_map()
-    IO.inspect(answer1, label: "answer!!!")
-    answer = EtlLog.get_status_map()
+    EtlLog.get_status_map()
     |> Map.new(fn {filename, %{status: status, message: msg}} ->
       case status do
         "success" -> {filename, {:ok, msg}}
         "error" -> {filename, {:error, msg}}
       end
     end)
-
-    answer
   end
 
   def error_to_string(:too_large), do: "File is too large (max 50MB)"
