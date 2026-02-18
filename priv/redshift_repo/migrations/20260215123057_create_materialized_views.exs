@@ -2,7 +2,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
   use Ecto.Migration
   @disable_ddl_transaction true
   def up do
-    # 1. Сводка ДТП по годам и районам
     execute """
     CREATE MATERIALIZED VIEW mv_collisions_by_district_year AS
     SELECT
@@ -21,7 +20,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dl.district, dd.year
     """
 
-    # 2. Анализ пострадавших по тяжести
     execute """
     CREATE MATERIALIZED VIEW mv_casualty_severity AS
     SELECT
@@ -48,7 +46,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dd.year, dd.month, lsev.name, lclass.name, dp.sex_code, lsex.name, dp.age_group_code, lage.name
     """
 
-    # 3. Типы транспорта в ДТП
     execute """
     CREATE MATERIALIZED VIEW mv_vehicle_involvement AS
     SELECT
@@ -66,7 +63,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dd.year, dvt.type_code, ltype.name
     """
 
-    # 4. Паттерны по времени суток и дню недели
     execute """
     CREATE MATERIALIZED VIEW mv_time_patterns AS
     SELECT
@@ -86,7 +82,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dd.year, dd.day_of_week, dd.day_name, dt.hour, dt.time_of_day, dt.rush_hour, dd.is_weekend
     """
 
-    # 5. Влияние погоды и дорожных условий
     execute """
     CREATE MATERIALIZED VIEW mv_weather_impact AS
     SELECT
@@ -110,7 +105,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dd.year, dw.weather_code, lweat.name, dw.light_code, llight.name, dw.road_surface_code, lroad.name
     """
 
-    # 6. Манёвры и столкновения
     execute """
     CREATE MATERIALIZED VIEW mv_manoeuvre_impact AS
     SELECT
@@ -134,7 +128,6 @@ defmodule S3TestTask.RedshiftRepo.Migrations.CreateMaterializedViews do
     GROUP BY dd.year, dm.manoeuvre_code, lman.name, di.skidding_code, lskid.name, di.first_impact_code, limpact.name
     """
 
-    # 7. Месячный тренд — общая сводка
     execute """
     CREATE MATERIALIZED VIEW mv_monthly_trend AS
     SELECT
