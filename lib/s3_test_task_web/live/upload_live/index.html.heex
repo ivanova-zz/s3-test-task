@@ -1,0 +1,182 @@
+<div class="max-w-2xl mx-auto p-6">
+  <div :if={Phoenix.Flash.get(@flash, :info)} class="p-4 mb-4 bg-green-100 text-green-700 rounded">
+    {Phoenix.Flash.get(@flash, :info)}
+  </div>
+
+  <div :if={Phoenix.Flash.get(@flash, :error)} class="p-4 mb-4 bg-red-100 text-red-700 rounded">
+    {Phoenix.Flash.get(@flash, :error)}
+  </div>
+  <h1 class="text-2xl font-bold mb-6">Upload CSV Files</h1>
+
+  <form id="upload-form" phx-submit="save" phx-change="validate" class="space-y-4">
+    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+      <.live_file_input upload={@uploads.csv} class="hidden" />
+      <label for={@uploads.csv.ref} class="cursor-pointer">
+        <div class="text-gray-600">
+          <p class="text-lg">Drop CSV files here or click to browse</p>
+          <p class="text-sm mt-2">Max 5 files, 50MB each</p>
+        </div>
+      </label>
+    </div>
+
+    <%= for entry <- @uploads.csv.entries do %>
+      <div class="flex items-center gap-4 p-3 bg-gray-50 rounded">
+        <div class="flex-1">
+          <p class="font-medium">{entry.client_name}</p>
+          <div class="w-full bg-gray-200 rounded h-2 mt-1">
+            <div class="bg-blue-500 h-2 rounded" style={"width: #{entry.progress}%"}></div>
+          </div>
+        </div>
+        <button
+          type="button"
+          phx-click="cancel"
+          phx-value-ref={entry.ref}
+          class="text-red-500 hover:text-red-700"
+        >
+          ✕
+        </button>
+      </div>
+
+      <%= for err <- upload_errors(@uploads.csv, entry) do %>
+        <p class="text-red-500 text-sm">{error_to_string(err)}</p>
+      <% end %>
+    <% end %>
+
+    <button
+      type="submit"
+      disabled={@uploads.csv.entries == []}
+      class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+    >
+      Upload to S3
+    </button>
+  </form>
+
+  <%= if @uploaded_files != [] do %>
+    <div class="mt-8">
+      <h2 class="text-xl font-bold mb-4">Uploaded Files</h2>
+      <ul class="space-y-2">
+        <%= for file <- @uploaded_files do %>
+          <li class="flex items-center gap-2 p-3 bg-green-50 rounded">
+            <span class="text-green-500">✓</span>
+            <span class="flex-1">{file.name}</span>
+            <a href={file.url} target="_blank" class="text-blue-500 hover:underline">
+              View
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= if @errors != [] do %>
+    <div class="mt-4">
+      <%= for error <- @errors do %>
+        <p class="text-red-500">{error}</p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mt-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">All Files in S3</h2>
+      <button
+        phx-click="refresh"
+        class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+      >
+        ↻ Refresh
+      </button>
+    </div>
+
+    <%= if @s3_files == [] do %>
+      <p class="text-gray-500 text-center py-8">No files in S3</p>
+    <% else %>
+      <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="text-left p-3 border">Name</th>
+              <th class="text-left p-3 border">Size</th>
+              <th class="text-left p-3 border">Last Modified</th>
+              <th class="text-left p-3 border">Actions</th>
+              <th class="text-left p-3 border">ETL</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= for file <- @s3_files do %>
+              <tr class="hover:bg-gray-50">
+                <td class="p-3 border">
+                  <span class="font-medium">{file.name}</span>
+                </td>
+                <td class="p-3 border">{format_size(file.size)}</td>
+                <td class="p-3 border text-sm">{file.last_modified}</td>
+                <td class="p-3 border">
+                  <button
+                    phx-click="load_to_redshift"
+                    phx-value-key={file.key}
+                    phx-value-name={file.name}
+                    disabled={@loading_file == file.key}
+                    data-confirm="Load this file to Redshift?"
+                    class={"px-2 py-1 rounded text-sm text-white " <>
+                      if @loading_file == file.key,
+                        do: "bg-gray-400 cursor-wait",
+                        else: "bg-green-500 hover:bg-green-600"}
+                  >
+                    {if @loading_file == file.key, do: "Loading...", else: "Load to Redshift"}
+                  </button>
+                </td>
+                <td class="p-3 border">
+                  <%= if etl_transformable?(file.name) do %>
+                    <% etl = Map.get(@etl_status, file.name)
+                    IO.inspect(etl, label: "etl!!")
+                    IO.inspect(@etl_status, label: "@etl_status!!")
+                    IO.inspect(file.name, label: "@file.name!!")
+                    %>
+
+                    <% has_staging = has_staging_table?(@staging_tables, file.name) %>
+                    <%= cond do %>
+                      <% etl == :loading -> %>
+                        <span class="text-yellow-600 text-sm">⏳ Processing...</span>
+
+                      <% match?({:ok, _}, etl) -> %>
+                        <span class="text-green-600 text-sm">✅ Already transformed</span>
+
+                      <% match?({:error, _}, etl) -> %>
+                        <span class="text-red-600 text-sm">
+                          ❌ Failed: {elem(etl, 1)}
+                        </span>
+                        <%= if has_staging do %>
+                          <button
+                            phx-click="transform"
+                            phx-value-name={file.name}
+                            class="ml-1 px-2 py-1 rounded text-sm text-white bg-red-500 hover:bg-red-600"
+                          >
+                            Retry
+                          </button>
+                        <% end %>
+
+                      <% has_staging -> %>
+                        <button
+                          phx-click="transform"
+                          phx-value-name={file.name}
+                          data-confirm="Transform to Star Schema?"
+                          class="px-2 py-1 rounded text-sm text-white bg-purple-500 hover:bg-purple-600"
+                        >
+                          Transform
+                        </button>
+
+                      <% true -> %>
+                        <span class="text-gray-400 text-sm">Load to Redshift first</span>
+                    <% end %>
+                  <% else %>
+                    <span class="text-gray-400 text-sm">—</span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-sm text-gray-500 mt-2">Total: {length(@s3_files)} file(s)</p>
+    <% end %>
+  </div>
+</div>
