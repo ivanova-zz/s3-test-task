@@ -82,24 +82,6 @@ defmodule S3TestTaskWeb.UploadLive.Index do
   end
 
   @impl true
-  def handle_info({:redshift_result, _key, name, result}, socket) do
-    socket = assign(socket, :loading_file, nil)
-
-    case result do
-      {:ok, %{table: table}} ->
-        staging_tables = Map.put(socket.assigns.staging_tables, name, table)
-
-        {:noreply,
-         socket
-         |> assign(:staging_tables, staging_tables)
-         |> put_flash(:info, "Loaded to table: #{table}")}
-
-      {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
-    end
-  end
-
-  @impl true
   def handle_event("transform", %{"name" => name}, socket) do
     case Map.get(socket.assigns.staging_tables, name) do
       nil ->
@@ -116,6 +98,24 @@ defmodule S3TestTaskWeb.UploadLive.Index do
         end)
 
         {:noreply, put_flash(socket, :info, "Transforming #{name} → Star Schema...")}
+    end
+  end
+
+  @impl true
+  def handle_info({:redshift_result, _key, name, result}, socket) do
+    socket = assign(socket, :loading_file, nil)
+
+    case result do
+      {:ok, %{table: table}} ->
+        staging_tables = Map.put(socket.assigns.staging_tables, name, table)
+
+        {:noreply,
+          socket
+          |> assign(:staging_tables, staging_tables)
+          |> put_flash(:info, "Loaded to table: #{table}")}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
     end
   end
 
