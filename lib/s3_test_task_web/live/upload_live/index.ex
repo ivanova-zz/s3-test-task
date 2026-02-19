@@ -72,6 +72,7 @@ defmodule S3TestTaskWeb.UploadLive.Index do
   def handle_event("load_to_redshift", %{"key" => key, "name" => name}, socket) do
     socket = assign(socket, :loading_file, key)
     parent = self()
+
     Task.start(fn ->
       result = RedshiftLoader.load_file(key)
       send(parent, {:redshift_result, key, name, result})
@@ -89,9 +90,9 @@ defmodule S3TestTaskWeb.UploadLive.Index do
         staging_tables = Map.put(socket.assigns.staging_tables, name, table)
 
         {:noreply,
-          socket
-          |> assign(:staging_tables, staging_tables)
-          |> put_flash(:info, "Loaded to table: #{table}")}
+         socket
+         |> assign(:staging_tables, staging_tables)
+         |> put_flash(:info, "Loaded to table: #{table}")}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
@@ -129,11 +130,10 @@ defmodule S3TestTaskWeb.UploadLive.Index do
     etl_status = Map.put(socket.assigns.etl_status, name, status)
 
     {:noreply,
-      socket
-      |> assign(:etl_status, etl_status)
-      |> put_flash(elem(flash, 0), elem(flash, 1))}
+     socket
+     |> assign(:etl_status, etl_status)
+     |> put_flash(elem(flash, 0), elem(flash, 1))}
   end
-
 
   defp load_s3_files do
     case S3Uploader.list_files() do

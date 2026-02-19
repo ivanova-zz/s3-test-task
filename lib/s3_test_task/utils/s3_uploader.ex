@@ -1,5 +1,4 @@
 defmodule S3TestTask.Utils.S3Uploader do
-
   def bucket do
     Application.get_env(:s3_test_task, :s3_bucket) ||
       raise "S3_BUCKET not configured!"

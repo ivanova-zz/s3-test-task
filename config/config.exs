@@ -7,7 +7,7 @@
 # General application configuration
 import Config
 
- config :s3_test_task,
+config :s3_test_task,
   ecto_repos: [S3TestTask.RedshiftRepo],
   generators: [timestamp_type: :utc_datetime]
 

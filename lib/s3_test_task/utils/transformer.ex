@@ -62,9 +62,9 @@ defmodule S3TestTask.Utils.Transformer do
       """)
     end)
     |> case do
-         {:ok, _} -> {:ok, "dim_code_lookup populated"}
-         error -> error
-       end
+      {:ok, _} -> {:ok, "dim_code_lookup populated"}
+      error -> error
+    end
   end
 
   # ---- collision ----
@@ -156,7 +156,8 @@ defmodule S3TestTask.Utils.Transformer do
     with {:ok, _} <- run_step("dim_vehicle_type", fn -> populate_dim_vehicle_type(stg) end),
          {:ok, _} <- run_step("dim_manoeuvre", fn -> populate_dim_manoeuvre(stg) end),
          {:ok, _} <- run_step("dim_impact", fn -> populate_dim_impact(stg) end),
-         {:ok, _} <- run_step("dim_person (vehicle)", fn -> populate_dim_person_from_vehicle(stg) end),
+         {:ok, _} <-
+           run_step("dim_person (vehicle)", fn -> populate_dim_person_from_vehicle(stg) end),
          {:ok, _} <- run_step("fact_vehicle", fn -> populate_fact_vehicle(stg) end) do
       {:ok, "vehicle dimensions + facts populated"}
     end
@@ -249,7 +250,8 @@ defmodule S3TestTask.Utils.Transformer do
 
   defp transform_casualty(stg) do
     with {:ok, _} <- run_step("dim_casualty_type", fn -> populate_dim_casualty_type(stg) end),
-         {:ok, _} <- run_step("dim_person (casualty)", fn -> populate_dim_person_from_casualty(stg) end),
+         {:ok, _} <-
+           run_step("dim_person (casualty)", fn -> populate_dim_person_from_casualty(stg) end),
          {:ok, _} <- run_step("fact_casualty", fn -> populate_fact_casualty(stg) end) do
       {:ok, "casualty dimensions + facts populated"}
     end

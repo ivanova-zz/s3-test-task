@@ -126,17 +126,14 @@
                 </td>
                 <td class="p-3 border">
                   <%= if etl_transformable?(file.name) do %>
-                    <% etl = Map.get(@etl_status, file.name)
-                    %>
+                    <% etl = Map.get(@etl_status, file.name) %>
 
                     <% has_staging = has_staging_table?(@staging_tables, file.name) %>
                     <%= cond do %>
                       <% etl == :loading -> %>
                         <span class="text-yellow-600 text-sm">⏳ Processing...</span>
-
                       <% match?({:ok, _}, etl) -> %>
                         <span class="text-green-600 text-sm">✅ Already transformed</span>
-
                       <% match?({:error, _}, etl) -> %>
                         <span class="text-red-600 text-sm">
                           ❌ Failed: {elem(etl, 1)}
@@ -150,7 +147,6 @@
                             Retry
                           </button>
                         <% end %>
-
                       <% has_staging -> %>
                         <button
                           phx-click="transform"
@@ -160,7 +156,6 @@
                         >
                           Transform
                         </button>
-
                       <% true -> %>
                         <span class="text-gray-400 text-sm">Load to Redshift first</span>
                     <% end %>

@@ -32,7 +32,7 @@ defmodule S3TestTaskWeb.ConnCase do
   end
 
   setup tags do
-    S3TestTask.DataCase.setup_sandbox(tags)
+#    S3TestTask.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

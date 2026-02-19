@@ -55,6 +55,7 @@ defmodule S3TestTask.Utils.RedshiftLoader do
 
   defp analyze_csv(s3_key) do
     bucket = Application.get_env(:s3_test_task, :s3_bucket)
+
     case ExAws.S3.get_object(bucket, s3_key, range: "bytes=0-51200") |> ExAws.request() do
       {:ok, %{body: body}} ->
         lines = String.split(body, ~r/\r?\n/, trim: true)

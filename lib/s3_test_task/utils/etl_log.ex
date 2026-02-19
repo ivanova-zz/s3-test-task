@@ -33,12 +33,13 @@ defmodule S3TestTask.Utils.EtlLog do
 
   def list_transformed do
     case Repo.query("""
-      SELECT filename, status, message, duration_ms, created_at
-      FROM etl_log
-      ORDER BY created_at DESC
-    """) do
+           SELECT filename, status, message, duration_ms, created_at
+           FROM etl_log
+           ORDER BY created_at DESC
+         """) do
       {:ok, %{rows: rows, columns: cols}} ->
         Enum.map(rows, fn row -> Enum.zip(cols, row) |> Map.new() end)
+
       _ ->
         []
     end
@@ -46,17 +47,17 @@ defmodule S3TestTask.Utils.EtlLog do
 
   def get_status_map do
     case Repo.query("""
-      SELECT filename, status, message
-      FROM etl_log
-      ORDER BY filename, created_at DESC
-    """) do
+           SELECT filename, status, message
+           FROM etl_log
+           ORDER BY filename, created_at DESC
+         """) do
       {:ok, %{rows: rows}} ->
         Map.new(rows, fn [filename, status, message] ->
           {filename, %{status: status, message: message}}
         end)
+
       _ ->
         %{}
     end
   end
-  
 end

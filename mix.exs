@@ -69,7 +69,8 @@ defmodule S3TestTask.MixProject do
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:mimic, "~> 1.10", only: :test}
     ]
   end
 
@@ -87,7 +88,7 @@ defmodule S3TestTask.MixProject do
       "redshift.migrate": ["ecto.migrate", "-r", "S3TestTask.RedshiftRepo"],
       "redshift.rollback": ["ecto.rollback", "-r", "S3TestTask.RedshiftRepo"],
       "redshift.reset": ["ecto.reset", "-r", "S3TestTask.RedshiftRepo"],
-      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+#      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
       "assets.build": ["compile", "tailwind s3_test_task", "esbuild s3_test_task"],
       "assets.deploy": [
