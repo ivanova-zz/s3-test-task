@@ -31,3 +31,6 @@ Materialized Views — Analytics Layer
 
 Pre-aggregated views built on top of the star schema for fast analytical queries. Each MV resolves dimension codes to human-readable names via dim_code_lookup, eliminating the need for repeated JOINs in application queries.
 ![MV UML](https://private-user-images.githubusercontent.com/33092166/551767774-d8577cb7-52fa-4c8b-acba-083bcf148735.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NzE0NDgwOTksIm5iZiI6MTc3MTQ0Nzc5OSwicGF0aCI6Ii8zMzA5MjE2Ni81NTE3Njc3NzQtZDg1NzdjYjctNTJmYS00YzhiLWFjYmEtMDgzYmNmMTQ4NzM1LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNjAyMTglMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjYwMjE4VDIwNDk1OVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWZhZDZiMTEwOTcxNzk4YTNiNTk3YWQ2YTUwNTEzOWEzYTYwZWU2ZWM3Yzc4NWYzYTU2MTdmODE1MzE2NDA0ZDEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.flKFs8yGx-dwsW4ykdvh2iVBvDKfTvrydmdZcdV0hbw)
+
+
+For a higher-quality data transfer in this case, I would move the CSV-to-staging-table copy operation into a Lambda function via S3 event integration: https://docs.aws.amazon.com/redshift/latest/dg/loading-data-copy-job.html
